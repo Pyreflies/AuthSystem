@@ -5,15 +5,14 @@ import { User } from './auth.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-
-@ApiTags('AuthenticationService') 
+@ApiTags('AuthenticationService')
 @Controller('auth')
 export class AuthController {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
         private readonly authService: AuthService
-    ){}
-    
+    ) { }
+
     @Get()
     @ApiOperation({ summary: 'Get all users' })
     async findAll(): Promise<User[]> {
@@ -40,15 +39,35 @@ export class AuthController {
     }
 
     @Post('login')
-    @Header('Content-Type', 'application/json') 
+    @Header('Content-Type', 'application/json')
     @ApiOperation({ summary: 'Login with credentials' })
     @ApiBody({ type: User })
     async login(@Body() credentials: User): Promise<any> {
         try {
-            const { access_token, responseTime } = await this.authService.login(credentials);
-            return { access_token, responseTime };
+            const { access_token, refresh_token, token_type, expiresIn, responseTime } = await this.authService.login(credentials);
+            return { access_token, refresh_token, token_type, expiresIn, responseTime };
         } catch (error) {
             throw new UnauthorizedException('Invalid credentials');
+        }
+    }
+
+    @Post('refresh')
+    async refresh(@Body() body: { refresh_token: string }): Promise<any> {
+        const { refresh_token } = body;
+        try {
+            // Verify and decode the refresh token
+            const decoded = this.authService.validateToken(refresh_token);
+            const user: User = await this.authService.validateUser(decoded);
+
+            if (user) {
+                // If the refresh token is valid, generate a new access token
+                const accessToken = this.authService.generateAccessToken(user);
+                return { access_token: accessToken };
+            }
+        } catch (error) {
+            // Handle invalid or expired refresh token
+            // ...
+            throw new HttpException('Error fetching user', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

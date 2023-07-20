@@ -1,6 +1,6 @@
-import * as crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 export const jwtConstants = {
-    secret:crypto.randomBytes(32).toString('hex'),
-    expiresIn:'1d'
+    secret: uuidv4(),
+    expiresIn:'1h'
 }
