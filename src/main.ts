@@ -10,6 +10,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseTimeInterceptor());
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.enableCors();
 
   const options = new DocumentBuilder()
   .setTitle('Authorrization-API')
@@ -19,7 +20,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
-
+  
   await app.listen(3000);
 }
 bootstrap();
