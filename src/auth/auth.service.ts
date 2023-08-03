@@ -28,17 +28,19 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
         const access_payload = {
-            sub: user.id,
+            _id: user._id,
             username: user.username,
             email: user.email,
         };
         const refresh_payload = {
-            sub: user.id,
+            _id: user._id,
             username: user.username,
             expiresIn: '1d'
         };
-        const _access = this.jwtService.sign(access_payload);
-        const _refresh = this.jwtService.sign(refresh_payload);
+        // const _access = this.jwtService.sign(access_payload);
+        // const _refresh = this.jwtService.sign(refresh_payload);
+        const _access = this.generateAccessToken(access_payload);
+        const _refresh = this.generateRefreshToken(refresh_payload);
         const now = Date.now();
         const sectionId = crypto.randomBytes(32).toString('hex');
 
@@ -58,20 +60,34 @@ export class AuthService {
         return null;
     }
 
+    async validateUserRefresh(credentials: any): Promise<User | null>  {
+        // Implement your user validation logic, e.g., check against a user database
+        // Return the user if the credentials are valid, otherwise return null
+        // Replace 'User' with your actual user schema and user model
 
-    generateAccessToken(user: User): string {
-        const payload = { sub: user.id, username: user.username, email: user.email };
+        const user = await this.userModel
+            .findOne({ _id: credentials._id })
+            .exec();
+        if (user) {
+            return user;
+        }
+        return null;
+    }
+
+
+    generateAccessToken(user: any): string {
+        const payload = { _id: user._id, username: user.username, email: user.email };
         return this.jwtService.sign(payload);
     }
 
-    generateRefreshToken(user: User): string {
-        const payload = { sub: user.id };
-        return this.jwtService.sign(payload, { expiresIn: '7d' }); // Refresh token expiration time (e.g., 7 days)
+    generateRefreshToken(user :any): string {
+        const payload = { _id: user._id ,expiresIn: user.expiresIn  };
+        return this.jwtService.sign(payload); // Refresh token expiration time (e.g., 7 days)
     }
 
-    async validateToken(token: string): Promise<any> {
+    async validateToken(token: any): Promise<User> {
         try {
-            return this.jwtService.verify(token);
+            return await this.jwtService.verify(token.refresh_token);
         } catch (err) {
             // Handle invalid token error or token expiration
             throw new HttpException(err, HttpStatus.NON_AUTHORITATIVE_INFORMATION);

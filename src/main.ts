@@ -13,7 +13,7 @@ async function bootstrap() {
   app.enableCors();
 
   const options = new DocumentBuilder()
-  .setTitle('Authorrization-API')
+  .setTitle('Authorization-API')
   .setDescription('Description of Authorrization API')
   .setVersion('1.0')
   .build();

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpStatus, UnauthorizedException, Get, HttpException, Param, Res, Header } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { User } from './auth.schema';
+import { User,Token } from './auth.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 export class AuthController {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
+        @InjectModel(Token.name) private tokenModel: Model<Token>,
         private readonly authService: AuthService
     ) { }
 
@@ -52,13 +53,14 @@ export class AuthController {
     }
 
     @Post('refresh')
-    async refresh(@Body() body: { refresh_token: string }): Promise<any> {
-        const { refresh_token } = body;
+    @Header('Content-Type', 'application/json')
+    @ApiOperation({ summary: 'Refresh token' })
+    @ApiBody({ type: Token })
+    async refresh(@Body() credentials: Token ): Promise<any> {
         try {
             // Verify and decode the refresh token
-            const decoded = this.authService.validateToken(refresh_token);
-            const user: User = await this.authService.validateUser(decoded);
-
+            const decoded = this.authService.validateToken(credentials);
+            const user: User = await this.authService.validateUserRefresh(decoded);
             if (user) {
                 // If the refresh token is valid, generate a new access token
                 const accessToken = this.authService.generateAccessToken(user);

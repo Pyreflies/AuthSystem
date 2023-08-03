@@ -16,4 +16,14 @@ export class User extends Document{
     password: string;
 }
 
+export class Token extends Document{
+    @Prop()
+    refresh_token: string;
+
+    @Prop()
+    access_token: string;
+}
+
 export const AuthSchema = SchemaFactory.createForClass(User);
+export const TokenSchema = SchemaFactory.createForClass(Token);
+
