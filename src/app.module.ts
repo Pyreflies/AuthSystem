@@ -8,7 +8,8 @@ import { jwtConstants } from './jwt.constants';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/Database'),
+    // MongooseModule.forRoot('mongodb://localhost:27017/Database'),
+    MongooseModule.forRoot('mongodb://127.0.0.1:27017/authentication'),
     JwtModule.register({
       secret:jwtConstants.secret,
       signOptions:{expiresIn:jwtConstants.expiresIn},
