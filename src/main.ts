@@ -2,13 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './services/http-exception.filter';
-import { ResponseTimeInterceptor } from './services/response-time.interceptor';
 import { ResponseInterceptor } from './services/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{cors: true});
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(new ResponseTimeInterceptor());
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.enableCors();
 

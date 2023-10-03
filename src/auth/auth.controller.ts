@@ -1,7 +1,8 @@
-import { Controller, Post, Body, HttpStatus, UnauthorizedException, Get, HttpException, Param, Res, Header } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, UnauthorizedException, Get, HttpException, Param, Res, Header, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
+// import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { User,Token } from './auth.schema';
+import { User, Token } from './auth.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -14,6 +15,18 @@ export class AuthController {
         private readonly authService: AuthService
     ) { }
 
+    @Get('health')
+    @ApiOperation({ summary: 'health check' })
+    //  @UseGuards(AuthGuard()) // Apply authentication guard (optional)
+    checkHealth(): { status: string } {
+        try {
+            return { status: 'Authentication service is healthy' };
+        }
+        catch {
+            throw new HttpException('Authentication service is not healthy', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     @Get()
     @ApiOperation({ summary: 'Get all users' })
     async findAll(): Promise<User[]> {
@@ -35,7 +48,7 @@ export class AuthController {
             }
             return user;
         } catch (error) {
-            throw new HttpException('Error fetching user', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Error fetching users', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,7 +69,7 @@ export class AuthController {
     @Header('Content-Type', 'application/json')
     @ApiOperation({ summary: 'Refresh token' })
     @ApiBody({ type: Token })
-    async refresh(@Body() credentials: Token ): Promise<any> {
+    async refresh(@Body() credentials: Token): Promise<any> {
         try {
             // Verify and decode the refresh token
             const decoded = this.authService.validateToken(credentials);
@@ -69,7 +82,7 @@ export class AuthController {
         } catch (error) {
             // Handle invalid or expired refresh token
             // ...
-            throw new HttpException('Error fetching user', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Error fetching users', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

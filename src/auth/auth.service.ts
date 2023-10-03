@@ -10,7 +10,6 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { jwtConstants } from 'src/jwt.constants';
 import * as crypto from 'crypto';
-import { async } from 'rxjs';
 
 @Injectable()
 export class AuthService {
